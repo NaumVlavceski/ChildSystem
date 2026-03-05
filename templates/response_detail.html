@@ -40,12 +40,6 @@
                         Детали за одговорот
                     </h1>
                 </div>
-                <div class="text-end">
-                    <span class="badge bg-primary fs-6 p-2">
-                        <i class="bi bi-{{ user.role }} me-1"></i>
-                        {{ user.get_role_display }}
-                    </span>
-                </div>
             </div>
         </div>
     </div>
@@ -139,7 +133,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-4">
             <div class="card h-100">
                 <div class="card-header bg-light">
@@ -157,18 +151,18 @@
                         <p class="text-muted mb-0">Вкупно поени</p>
                         <div class="progress mt-3" style="height: 20px;">
                             {% widthratio response.total_points 120 100 as percentage %}
-                            <div class="progress-bar 
+                            <div class="progress-bar
                                 {% if response.total_points >= 90 %}bg-success
                                 {% elif response.total_points >= 60 %}bg-info
                                 {% elif response.total_points >= 30 %}bg-warning
-                                {% else %}bg-danger{% endif %}" 
-                                role="progressbar" 
-                                style="width: {{ percentage }}%">
+                                {% else %}bg-danger{% endif %}"
+                                 role="progressbar"
+                                 style="width: {{ percentage }}%">
                                 <span class="fw-bold">{{ percentage|floatformat:0 }}%</span>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="list-group list-group-flush">
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <span>Максимални поени</span>
@@ -229,7 +223,7 @@
                             </div>
                         </div>
                         {% endif %}
-                        
+
                         {% if response.therapist_comments %}
                         <div class="col-md-6 mb-3">
                             <div class="card h-100 border-success">
@@ -280,9 +274,9 @@
                         {% for section in quiz.sections %}
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="heading{{ forloop.counter }}">
-                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" 
-                                        type="button" 
-                                        data-bs-toggle="collapse" 
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                                        type="button"
+                                        data-bs-toggle="collapse"
                                         data-bs-target="#collapse{{ forloop.counter }}">
                                     <i class="bi bi-folder me-2"></i>
                                     {{ section.name }}
@@ -292,80 +286,110 @@
                                  class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
                                  data-bs-parent="#responseAccordion">
                                 <div class="accordion-body">
+                                    <!-- DEBUG - ПРИВРЕМЕН, ЌЕ ГО ИЗБРИШЕМ ПОДОЦНА -->
+                                    <div style="background: #ffeb3b; padding: 15px; margin-bottom: 20px; border-radius: 5px; display: none;">
+                                        <h4>🔍 DEBUG - Податоци за прашања:</h4>
+                                        <p><strong>Сите answers клучеви:</strong></p>
+                                        <ul>
+                                        {% for key, value in answers.items %}
+                                            <li><strong>{{ key }}</strong>: {{ value|truncatechars:50 }}</li>
+                                        {% endfor %}
+                                        </ul>
+                                    </div>
+
                                     <table class="table table-hover table-sm">
                                         <thead>
-                                            <tr class="table-light">
-                                                <th width="60%">Прашање</th>
-                                                <th width="20%">Одговор на родителот</th>
-                                                <th width="20%">Поени од терапевт</th>
-                                            </tr>
+                                        <tr class="table-light">
+                                            <th width="60%">Прашање</th>
+                                            <th width="20%">Одговор на родителот</th>
+                                            <th width="20%">Поени од терапевт</th>
+                                        </tr>
                                         </thead>
                                         <tbody>
-                                            {% for q in section.questions %}
-                                            <tr>
-                                                <td>
-                                                    <strong>{{ forloop.counter }}.</strong> {{ q.text }}
-                                                    {% if q.commands %}
-                                                    <div class="mt-2 p-2 bg-light rounded small">
-                                                        <strong>Команди:</strong>
-                                                        <ul class="mb-0 ps-3">
-                                                            {% for command in q.commands %}
-                                                            <li>{{ command.command }}</li>
-                                                            {% endfor %}
-                                                        </ul>
-                                                    </div>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    <!-- КОРИСТИ SIMPLE ДИРЕКТЕН ПРИСТАП -->
-                                                    {% for key, value in answers.items %}
-                                                        {% if key == q.id %}
-                                                            {% if value is string %}
-                                                                <!-- Ако е стринг -->
-                                                                <span class="badge
-                                                                    {% if value == 'ДА' %}bg-success
-                                                                    {% elif value == 'ПОНЕКОГАШ' %}bg-warning
-                                                                    {% elif value == 'СЕ УШТЕ НЕ' %}bg-secondary
-                                                                    {% else %}bg-light text-dark{% endif %}">
-                                                                    {{ value }}
-                                                                </span>
-                                                            {% elif value.value %}
-                                                                <!-- Ако е речник со .value -->
-                                                                <span class="badge
-                                                                    {% if value.value == 'ДА' %}bg-success
-                                                                    {% elif value.value == 'ПОНЕКОГАШ' %}bg-warning
-                                                                    {% elif value.value == 'СЕ УШТЕ НЕ' %}bg-secondary
-                                                                    {% else %}bg-light text-dark{% endif %}">
-                                                                    {{ value.value }}
-                                                                </span>
-                                                                {% if value.commands %}
-                                                                <div class="mt-1">
-                                                                    <small class="text-muted">Избрани команди:</small>
-                                                                    <ul class="mb-0 small">
-                                                                        {% for cmd in value.commands %}
-                                                                        <li>{{ cmd }}</li>
-                                                                        {% endfor %}
-                                                                    </ul>
-                                                                </div>
-                                                                {% endif %}
-                                                            {% endif %}
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                </td>
-                                                <td>
-                                                    <!-- КОРИСТИ SIMPLE ДИРЕКТЕН ПРИСТАП -->
-                                                    {% for key, value in therapist_points.items %}
-                                                        {% if key == q.id %}
-                                                            <span class="badge bg-info">
-                                                                {{ value }} поени
+                                        {% for q in section.questions %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ forloop.counter }}.</strong> {{ q.text }}
+                                                {% if q.commands %}
+                                                <div class="mt-2 p-2 bg-light rounded small">
+                                                    <strong>Команди:</strong>
+                                                    <ul class="mb-0 ps-3">
+                                                        {% for command in q.commands %}
+                                                        <li>{{ command.command }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <!-- ПРВО: Прикажи го главниот одговор (ДА/ПОНЕКОГАШ/НЕ) -->
+                                                {% for key, value in answers.items %}
+                                                    {% if key == q.id %}
+                                                        {% if value is string %}
+                                                            <span class="badge
+                                                                {% if value == 'ДА' %}bg-success
+                                                                {% elif value == 'ПОНЕКОГАШ' %}bg-warning
+                                                                {% elif value == 'СЕ УШТЕ НЕ' %}bg-secondary
+                                                                {% else %}bg-light text-dark{% endif %}">
+                                                                {{ value }}
+                                                            </span>
+                                                        {% elif value.value %}
+                                                            <span class="badge
+                                                                {% if value.value == 'ДА' %}bg-success
+                                                                {% elif value.value == 'ПОНЕКОГАШ' %}bg-warning
+                                                                {% elif value.value == 'СЕ УШТЕ НЕ' %}bg-secondary
+                                                                {% else %}bg-light text-dark{% endif %}">
+                                                                {{ value.value }}
                                                             </span>
                                                         {% endif %}
-                                                    {% empty %}
-                                                        <span class="text-muted">-</span>
-                                                    {% endfor %}
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                                <!-- ВТОРО: Прикажи _examples текст ако постои -->
+                                                {% for key, value in answers.items %}
+                                                    {% if key == q.id|stringformat:"s"|add:"_examples" %}
+                                                        <div class="mt-2 p-2 bg-light rounded">
+                                                            <small class="text-muted fw-bold">Примери:</small>
+                                                            <p class="mb-0 small">{{ value }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                                <!-- ТРЕТО: Прикажи _text текст ако постои -->
+                                                {% for key, value in answers.items %}
+                                                    {% if key == q.id|stringformat:"s"|add:"_text" %}
+                                                        <div class="mt-2 p-2 bg-light rounded">
+                                                            <small class="text-muted fw-bold">Објаснување:</small>
+                                                            <p class="mb-0 small">{{ value }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                                <!-- ЧЕТВРТО: Прикажи команди ако постојат -->
+                                                {% for key, value in answers.items %}
+                                                    {% if key == q.id and value.commands %}
+                                                        <div class="mt-1">
+                                                            <small class="text-muted">Избрани команди:</small>
+                                                            <ul class="mb-0 small">
+                                                                {% for cmd in value.commands %}
+                                                                <li>{{ cmd }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for key, value in therapist_points.items %}
+                                                    {% if key == q.id %}
+                                                        <span class="badge bg-info">{{ value }} поени</span>
+                                                    {% endif %}
+                                                {% empty %}
+                                                    <span class="text-muted">-</span>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
@@ -396,43 +420,39 @@
                                                 {{ forloop.counter }}. {{ q.text }}
                                             </h6>
 
-                                            <!-- КОРИСТИ SIMPLE ДИРЕКТЕН ПРИСТАП -->
+                                            <!-- Главен одговор за завршни прашања -->
                                             {% for key, value in answers.items %}
                                                 {% if key == q.id %}
                                                     {% if value is string %}
-                                                        <!-- Ако е стринг -->
-                                                        <div class="mb-3">
+                                                        <div class="mb-2">
                                                             <strong>Одговор:</strong>
-                                                            <span class="badge bg-info ms-2">
+                                                            <span class="badge
+                                                                {% if value == 'ДА' %}bg-success
+                                                                {% elif value == 'НЕ' %}bg-danger
+                                                                {% else %}bg-info{% endif %} ms-2">
                                                                 {{ value }}
                                                             </span>
                                                         </div>
-                                                    {% elif value.value %}
-                                                        <!-- Ако е речник -->
-                                                        <div class="mb-3">
-                                                            <strong>Одговор:</strong>
-                                                            <span class="badge bg-info ms-2">
-                                                                {{ value.value }}
-                                                            </span>
-                                                        </div>
-                                                        {% if value.text %}
-                                                        <div class="p-3 bg-light rounded mb-3">
-                                                            <strong>Објаснување:</strong>
-                                                            <p class="mb-0">{{ value.text }}</p>
-                                                        </div>
-                                                        {% endif %}
                                                     {% endif %}
                                                 {% endif %}
                                             {% endfor %}
 
-                                            <!-- КОРИСТИ SIMPLE ДИРЕКТЕН ПРИСТАП -->
+                                            <!-- Текст за завршни прашања -->
+                                            {% for key, value in answers.items %}
+                                                {% if key == q.id|stringformat:"s"|add:"_text" %}
+                                                    <div class="p-2 bg-light rounded">
+                                                        <small class="text-muted fw-bold">Објаснување:</small>
+                                                        <p class="mb-0">{{ value }}</p>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+
+                                            <!-- Поени -->
                                             {% for key, value in therapist_points.items %}
                                                 {% if key == q.id %}
-                                                <div>
+                                                <div class="mt-2">
                                                     <strong>Поени:</strong>
-                                                    <span class="badge bg-success ms-2">
-                                                        {{ value }} поени
-                                                    </span>
+                                                    <span class="badge bg-success ms-2">{{ value }} поени</span>
                                                 </div>
                                                 {% endif %}
                                             {% endfor %}
@@ -460,10 +480,10 @@
                                 <i class="bi bi-printer me-1"></i>
                                 Печати
                             </button>
-                            <button class="btn btn-outline-primary ms-2" onclick="exportToPDF()">
+                            <a href="{% url 'export_response_pdf' response.id %}" class="btn btn-outline-primary ms-2">
                                 <i class="bi bi-download me-1"></i>
-                                Експортирај
-                            </button>
+                                Експортирај PDF
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -544,31 +564,26 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Функција за раширување на сите секции
-    window.toggleAllSections = function() {
-        const accordionButtons = document.querySelectorAll('.accordion-button');
-        const allExpanded = Array.from(accordionButtons).every(btn => !btn.classList.contains('collapsed'));
+    document.addEventListener('DOMContentLoaded', function() {
+        // Функција за раширување на сите секции
+        window.toggleAllSections = function() {
+            const accordionButtons = document.querySelectorAll('.accordion-button');
+            const allExpanded = Array.from(accordionButtons).every(btn => !btn.classList.contains('collapsed'));
 
-        accordionButtons.forEach(btn => {
-            if (allExpanded) {
-                // Затвори ги сите
-                if (!btn.classList.contains('collapsed')) {
-                    btn.click();
+            accordionButtons.forEach(btn => {
+                if (allExpanded) {
+                    // Затвори ги сите
+                    if (!btn.classList.contains('collapsed')) {
+                        btn.click();
+                    }
+                } else {
+                    // Отвори ги сите
+                    if (btn.classList.contains('collapsed')) {
+                        btn.click();
+                    }
                 }
-            } else {
-                // Отвори ги сите
-                if (btn.classList.contains('collapsed')) {
-                    btn.click();
-                }
-            }
-        });
-    };
-
-    // Функција за експорт во PDF
-    window.exportToPDF = function() {
-        alert('Експортирањето во PDF е во развој. Во реална имплементација ова би генерирало PDF документ.');
-    };
-});
+            });
+        };
+    });
 </script>
 {% endblock %}

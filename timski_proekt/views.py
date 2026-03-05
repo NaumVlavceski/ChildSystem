@@ -1,10 +1,16 @@
+
+
+from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import JsonResponse, HttpResponseForbidden
-from django.db.models import Q
+from django.http import HttpResponseForbidden, HttpResponse
+
 import json
+import pdfkit
+from django.template.loader import render_to_string
+
 from .models import CustomUser, Child, Questionnaire, ParentResponse
 from .forms import CustomUserCreationForm, ChildForm, TherapistResponseForm
 
@@ -227,12 +233,51 @@ def therapist_response(request, response_id):
 def admin_dashboard(request):
     users = CustomUser.objects.all()
     responses = ParentResponse.objects.all().order_by('-created_at')
-    return render(request, 'admin_dashboard.html', {
+
+    parent_count = CustomUser.objects.filter(role='parent').count()
+    therapist_count = CustomUser.objects.filter(role='therapist').count()
+    total_children = Child.objects.count()
+
+    avg_child_age = 0
+    children = Child.objects.all()
+    if children:
+        total_months = sum(child.get_age_in_months() for child in children)
+        avg_child_age = round(total_months / children.count())
+
+    # Обработка на POST за додавање нов корисник
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            # Земи ја улогата од формата
+            role = request.POST.get('role', 'parent')
+            user.role = role
+            # Земи го телефонскиот број
+            phone = request.POST.get('phone', '')
+            if phone:
+                user.phone = phone
+            user.save()
+
+            #messages.success(request, f'Корисникот {user.username} е успешно креиран!')
+            return redirect('admin_dashboard')
+        else:
+            # Прикажи грешки
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    else:
+        form = CustomUserCreationForm()
+
+    context = {
         'users': users,
-        'responses': responses
-    })
-
-
+        'responses': responses,
+        'parent_count': parent_count,
+        'therapist_count': therapist_count,
+        'total_children': total_children,
+        'avg_child_age': avg_child_age,
+        'form': form,  # Испрати ја формата до темплејтот
+    }
+    return render(request, 'admin_dashboard.html', context)
 # Детали за Parent Response
 @login_required
 def response_detail(request, response_id):
@@ -256,3 +301,68 @@ def response_detail(request, response_id):
         'answers': answers,
         'therapist_points': therapist_points
     })
+
+
+@login_required
+def export_response_pdf(request, response_id):
+    # Земи го одговорот од база
+    response = get_object_or_404(ParentResponse, id=response_id)
+
+    # Проверка дали корисникот смее да гледа
+    if not (request.user == response.parent or
+            request.user.role == 'therapist' or
+            request.user.role == 'admin'):
+        return HttpResponseForbidden("Немате пристап до овој одговор")
+
+    # Вчитај го прашалникот
+    with open(f"timski_proekt/Prasalnici/{response.questionnaire.months}meseci.json", encoding="utf-8") as f:
+        quiz = json.load(f)
+
+    # Вчитај ги одговорите
+    answers = response.get_answers()
+    therapist_points = response.get_therapist_points()
+
+    # Направи посебен HTML за PDF
+    html_string = render_to_string('pdf_export.html', {
+        'response': response,
+        'quiz': quiz,
+        'answers': answers,
+        'therapist_points': therapist_points,
+        'user': request.user,
+    })
+
+    # Конфигурација за pdfkit - ПАТЕКАТА ДО wkhtmltopdf
+    try:
+        # Обиди се со стандардната патека
+        config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+
+        # Опции за подобар изглед
+        options = {
+            'page-size': 'A4',
+            'encoding': 'UTF-8',
+            'enable-local-file-access': None,
+            'margin-top': '20mm',
+            'margin-right': '15mm',
+            'margin-bottom': '20mm',
+            'margin-left': '15mm',
+        }
+
+        # Направи PDF
+        pdf = pdfkit.from_string(html_string, False, configuration=config, options=options)
+
+    except Exception as e:
+        # Ако не успее, пробај без конфигурација (ако wkhtmltopdf е во PATH)
+        try:
+            pdf = pdfkit.from_string(html_string, False, options=options)
+        except:
+            # Ако пак не успее, врати грешка
+            return HttpResponse(f"Грешка при генерирање PDF: {str(e)}", status=500)
+
+    # Врати го PDF-то како одговор
+    response_pdf = HttpResponse(pdf, content_type='application/pdf')
+
+    # Име на файлот
+    filename = f"odgovor_{response.child.first_name}_{response.child.last_name}_{response.questionnaire.months}_meseci.pdf"
+    response_pdf['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    return response_pdf

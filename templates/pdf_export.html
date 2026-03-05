@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="UTF-8">
+    <title>Детали за одговорот - {{ response.child.first_name }} {{ response.child.last_name }}</title>
+    <style>
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #333;
+            margin: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            color: #0d6efd;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 18px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-left: 4px solid #0d6efd;
+            margin: 20px 0 10px 0;
+        }
+        h3 {
+            font-size: 16px;
+            margin: 15px 0 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th {
+            background-color: #f1f1f1;
+            text-align: left;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            width: 150px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .badge-success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        .badge-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .badge-secondary {
+            background-color: #e2e3e5;
+            color: #41464b;
+        }
+        .badge-info {
+            background-color: #cff4fc;
+            color: #055160;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            padding-top: 10px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .question {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #fcfcfc;
+            border: 1px solid #eee;
+        }
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .answer {
+            margin-left: 20px;
+        }
+        .points {
+            text-align: right;
+            font-weight: bold;
+        }
+        .commands {
+            background-color: #f5f5f5;
+            padding: 5px 10px;
+            margin-top: 5px;
+            font-size: 11px;
+            border-left: 3px solid #0d6efd;
+        }
+        @page {
+            margin: 2cm;
+        }
+    </style>
+</head>
+<body>
+    <h1>Детали за одговорот</h1>
+
+    <!-- Основни информации -->
+    <div class="info-box">
+        <div class="info-row">
+            <div class="info-label">Дете:</div>
+            <div>{{ response.child.first_name }} {{ response.child.last_name }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Датум на раѓање:</div>
+            <div>{{ response.child.birth_date|date:"d.m.Y" }} ({{ response.child.get_age_in_months }} месеци)</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Родител:</div>
+            <div>{{ response.parent.get_full_name|default:response.parent.username }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Е-пошта:</div>
+            <div>{{ response.parent.email|default:"Без е-пошта" }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Прашалник:</div>
+            <div>{{ response.questionnaire.title }} ({{ response.questionnaire.months }} месеци)</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Датум на пополнување:</div>
+            <div>{{ response.created_at|date:"d.m.Y H:i" }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Статус:</div>
+            <div>
+                {% if response.status == 'submitted' %}
+                    Чека на преглед
+                {% elif response.status == 'reviewed' %}
+                    Прегледано
+                {% elif response.status == 'completed' %}
+                    Завршено
+                {% endif %}
+            </div>
+        </div>
+        {% if response.total_points %}
+        <div class="info-row">
+            <div class="info-label">Вкупно поени:</div>
+            <div><strong>{{ response.total_points }} / 120</strong> ({% widthratio response.total_points 120 100 %}%)</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Забелешки од родител -->
+    {% if response.notes %}
+    <div class="section">
+        <h2>Забелешки од родител</h2>
+        <div style="background-color: #f5f5f5; padding: 10px;">
+            {{ response.notes|linebreaks }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Коментари од терапевт -->
+    {% if response.therapist_comments %}
+    <div class="section">
+        <h2>Коментари од терапевт</h2>
+        <div style="background-color: #e7f3ff; padding: 10px;">
+            {{ response.therapist_comments|linebreaks }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Одговори на прашања -->
+    <div class="section">
+        <h2>Одговори на прашања</h2>
+
+        {% for section in quiz.sections %}
+        <h3>{{ section.name }}</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th width="60%">Прашање</th>
+                    <th width="20%">Одговор</th>
+                    <th width="20%">Поени</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in section.questions %}
+                <tr>
+                    <td>
+                        <strong>{{ forloop.counter }}.</strong> {{ q.text }}
+                        {% if q.commands %}
+                        <div style="font-size: 11px; color: #666; margin-top: 5px;">
+                            <strong>Команди:</strong>
+                            <ul style="margin: 5px 0 0 20px;">
+                                {% for command in q.commands %}
+                                <li>{{ command.command }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% for key, value in answers.items %}
+                            {% if key == q.id %}
+                                {% if value is string %}
+                                    <span class="badge
+                                        {% if value == 'ДА' %}badge-success
+                                        {% elif value == 'ПОНЕКОГАШ' %}badge-warning
+                                        {% elif value == 'СЕ УШТЕ НЕ' %}badge-secondary
+                                        {% else %}badge-info{% endif %}">
+                                        {{ value }}
+                                    </span>
+                                {% elif value.value %}
+                                    <span class="badge
+                                        {% if value.value == 'ДА' %}badge-success
+                                        {% elif value.value == 'ПОНЕКОГАШ' %}badge-warning
+                                        {% elif value.value == 'СЕ УШТЕ НЕ' %}badge-secondary
+                                        {% else %}badge-info{% endif %}">
+                                        {{ value.value }}
+                                    </span>
+                                    {% if value.commands %}
+                                    <div class="commands">
+                                        <strong>Избрани команди:</strong>
+                                        <ul style="margin: 5px 0 0 20px;">
+                                            {% for cmd in value.commands %}
+                                            <li>{{ cmd }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endif %}
+                                    {% if value.text %}
+                                    <div style="margin-top: 5px; font-style: italic;">
+                                        {{ value.text }}
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td style="text-align: center;">
+                        {% for key, value in therapist_points.items %}
+                            {% if key == q.id %}
+                                <strong>{{ value }}</strong>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}
+
+        <!-- Завршни прашања -->
+        {% if quiz.final_questions %}
+        <h3>Завршни прашања</h3>
+        {% for q in quiz.final_questions %}
+        <div class="question">
+            <div class="question-text">{{ forloop.counter }}. {{ q.text }}</div>
+            <div class="answer">
+                {% for key, value in answers.items %}
+                    {% if key == q.id %}
+                        {% if value is string %}
+                            <span class="badge badge-info">{{ value }}</span>
+                        {% elif value.value %}
+                            <span class="badge badge-info">{{ value.value }}</span>
+                            {% if value.text %}
+                            <div style="margin-top: 5px; font-style: italic;">
+                                {{ value.text }}
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for key, value in therapist_points.items %}
+                    {% if key == q.id %}
+                    <div style="margin-top: 10px;">
+                        <strong>Поени: {{ value }}</strong>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        Генерирано на {% now "d.m.Y H:i" %} | Развоен Систем
+    </div>
+</body>
+</html>
