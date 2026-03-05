@@ -194,6 +194,11 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
+{#                                                    <button class="btn btn-outline-info"#}
+{#                                                            data-bs-toggle="modal"#}
+{#                                                            data-bs-target="#editUserModal{{ user.id }}">#}
+{#                                                        <i class="bi bi-pencil"></i>#}
+{#                                                    </button>#}
                                                     {% if user != request.user %}
                                                     <button class="btn btn-outline-danger"
                                                             onclick="confirmDeleteUser('{{ user.id }}', '{{ user.username }}')">
@@ -287,11 +292,11 @@
                                                        title="Детали">
                                                         <i class="bi bi-eye"></i>
                                                     </a>
-                                                    <a href="#" class="btn btn-outline-warning"
-                                                       data-bs-toggle="tooltip"
-                                                       title="Измени статус">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </a>
+{#                                                    <a href="#" class="btn btn-outline-warning"#}
+{#                                                       data-bs-toggle="tooltip"#}
+{#                                                       title="Измени статус">#}
+{#                                                        <i class="bi bi-pencil"></i>#}
+{#                                                    </a>#}
                                                 </div>
                                             </td>
                                         </tr>
@@ -542,7 +547,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.confirmDeleteUser = function(userId, username) {
         if (confirm(`Дали сте сигурни дека сакате да го избришете корисникот "${username}"?`)) {
             // Во реална имплементација, ова би праќало AJAX request
-            alert(`Корисникот ${username} би бил избришан. (Во реална имплементација)`);
+            {#alert(`Корисникот ${username} би бил избришан. (Во реална имплементација)`);#}
+
         }
     };
 

@@ -5,8 +5,10 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import HttpResponseForbidden, HttpResponse
 
+from django.http import HttpResponseForbidden, HttpResponse
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
+from django.db.models import Q
 import json
 import pdfkit
 from django.template.loader import render_to_string
@@ -47,7 +49,7 @@ def prasalnici(request, mesec):
 
     # POST - зачувување на одговори
     elif request.method == "POST" and is_parent(request.user):
-        # Земи го детето (во овој пример, го земаме првото дете)
+        # Земи го детето (во овој пример, го зgiемаме првото дете)
         child = request.user.children.first()
         if not child:
             return redirect('add_child')
