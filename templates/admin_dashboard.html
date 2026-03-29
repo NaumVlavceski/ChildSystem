@@ -471,9 +471,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Потврда за бришење на корисник
     window.confirmDeleteUser = function(userId, username) {
         if (confirm(`Дали сте сигурни дека сакате да го избришете корисникот "${username}"?`)) {
-            // Во реална имплементација, ова би праќало AJAX request
-            {#alert(`Корисникот ${username} би бил избришан. (Во реална имплементација)`);#}
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/dashboard/`;
 
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'delete_user';
+            form.appendChild(actionInput);
+
+            const userIdInput = document.createElement('input');
+            userIdInput.type = 'hidden';
+            userIdInput.name = 'user_id';
+            userIdInput.value = userId;
+            form.appendChild(userIdInput);
+
+            document.body.appendChild(form);
+            form.submit();
         }
     };
 
