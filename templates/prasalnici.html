@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали за одговорот - Развоен Систем{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Основни бои */
+    :root {
+        --primary-blue: #1e90ff;
+        --light-blue: #e6f2ff;
+        --dark-blue: #0a4d8c;
+        --card-bg: #f9fbff;
+    }
+
+    h1, h2 {
+        color: var(--dark-blue);
+    }
+
+    .container {
+        max-width: 1000px;
+    }
+
+    .info-box {
+        background-color: var(--light-blue);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .important-list li {
+        margin-bottom: 10px;
+    }
+
+    textarea {
+        border: 1px solid var(--primary-blue);
+        border-radius: 8px;
+    }
+
+    .question-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+        margin-bottom: 30px;
+    }
+
+    .question-table th {
+        padding: 10px;
+        border-radius: 8px 8px 0 0;
+        text-align: center;
+    }
+
+    .question-table .radio-cell {
+        background-color: var(--card-bg);
+        padding: 12px;
+        border-radius: 0 0 8px 8px;
+        text-align: center;
+    }
+
+    .question-text {
+        text-align: left;
+    }
+
+    .radio-cell input {
+        transform: scale(1.2);
+        accent-color: var(--primary-blue);
+    }
+
+    .points-cell {
+        font-weight: bold;
+    }
+
+    .section-total {
+        background-color: var(--light-blue);
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    .final-question {
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .final-textarea-custom {
+        border: 1px solid var(--primary-blue);
+        border-radius: 8px;
+    }
+
+    .final-options-custom input {
+        transform: scale(1.2);
+        accent-color: var(--primary-blue);
+    }
+
+    button {
+        background-color: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    button:hover {
+        background-color: var(--dark-blue);
+    }
+
+    .accordion-item {
+        background-color: var(--card-bg);
+        border: none;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .accordion-header button {
+        color: var(--dark-blue);
+        font-weight: bold;
+    }
+
+    .bg-light-subtle {
+        background-color: #d9ecff !important;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="ms-5 me-5 mt-4">
+    <div class="row mb-3 align-items-center">
+        <div class="col-8">
+            <h1 class="mb-0">{{ quiz.title }}</h1>
+        </div>
+        <div class="col-4 text-end small">
+            <p class="mb-0">{{ quiz.age_range }}</p>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <p class="mb-0">
+            На следниве страници се дадени активности кои вашето бебе можеби ги прави.
+            Вашето бебе некои од активностите можеби веќе ги извршува, а други можеби сè уште не започнало да ги прави.
+            За секое барање ве молиме пополнете во соодветното квадранче во зависност од тоа дали бебето
+            активноста ја изведува редовно, понекогаш или сè уште не.
+        </p>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-6">
+            <p class="fw-bold">Важни насоки што треба да се запомнат:</p>
+            <ul class="important-list">
+                <li>Секоја активност пробајте ја со вашето бебе пред да одговорите</li>
+                <li>Направете овој прашалник да биде забавен за вас и вашето бебе, како да е игра</li>
+                <li>Бидете сигурни дека бебето е најадено и наспано</li>
+            </ul>
+        </div>
+        <div class="col-6">
+            <p class="fw-bold">Забелешки:</p>
+            <textarea class="form-control" style="height: 100px"></textarea>
+        </div>
+    </div>
+
+    <!-- Останати делови се исти, само со применетите класи и стилови -->
+    <form method="POST">
+        {% csrf_token %}
+        {% for section in quiz.sections %}
+            <h2>{{ section.name }}</h2>
+            <table class="question-table">
+                <tr>
+                    <th class="col-question"></th>
+                    <th class="col-header">ДА</th>
+                    <th class="col-header">ПОНЕКОГАШ</th>
+                    <th class="col-header">СЕ УШТЕ НЕ</th>
+                </tr>
+
+                {% for q in section.questions %}
+                    <tr>
+                        <td class="question-text w-75">
+                            {{ forloop.counter }}. {{ q.text }}
+                            {% if q.commands %}
+                                <div class="mt-2 p-3 border rounded bg-light-subtle">
+                                    <ul class="list-unstyled ms-4 mb-0 small">
+                                        {% for command in q.commands %}
+                                            <li class="d-flex align-items-center mb-1">
+                                                <input type="checkbox" name="{{ q.id }}_command"
+                                                       value="{{ command.command }}" class="me-2 form-check-input">
+                                                <label class="mb-0">{{ command.command }}</label>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                            {% if q.example_combinations %}
+                                <div class="mt-2">
+                                    <textarea name="{{ q.id }}_examples" class="form-control" rows="3"
+                                              placeholder="{{ q.example_combinations }}"></textarea>
+                                </div>
+                            {% endif %}
+                        </td>
+                        {% for opt in q.options %}
+                            <td class="radio-cell">
+                                <input type="radio" name="{{ q.id }}" value="{{ opt }}" required>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+
+        <h2>Завршни прашања</h2>
+        <p>Родителите можат да пишуваат дополнителни коментари во просторот.</p>
+
+        {% for q in quiz.final_questions %}
+            <div class="final-question mb-4">
+                <p>{{ forloop.counter }}. {{ q.text }}</p>
+                <textarea name="txt_{{ q.id }}" class="form-control mb-3 final-textarea-custom" rows="3"
+                          placeholder="Објаснете овде ако треба..."></textarea>
+                <div class="d-flex justify-content-end final-options-custom">
+                    {% for opt in q.options %}
+                        <div class="text-center me-4">
+                            <label class="d-block mb-1 fw-bold" for="{{ q.id }}_{{ opt }}">{{ opt }}</label>
+                            <input class="form-check-input" type="radio" name="{{ q.id }}" id="{{ q.id }}_{{ opt }}" value="{{ opt }}" required>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+
+        <button type="submit">Испрати</button>
+    </form>
+</div>
+
+{% endblock %}
